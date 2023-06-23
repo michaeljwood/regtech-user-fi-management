@@ -6,10 +6,12 @@ from db import *
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.authentication import requires
 
 router = Router()
 
 @router.get("/", response_model=List[FinancialInstitutionWithDomainsDto])
+@requires("authenticated")
 async def get_groups(request: Request, session: AsyncSession = Depends(get_session)):
     async with session.begin():
         stmt = select(FinancialInstitutionDao).options(selectinload(FinancialInstitutionDao.domains))
@@ -17,6 +19,7 @@ async def get_groups(request: Request, session: AsyncSession = Depends(get_sessi
         return res.scalars().all()
     
 @router.post("/", response_model=Tuple[str, FinancialInstitutionDto])
+@requires(["query-groups", "manage-users"])
 async def create_group(request: Request, fi: FinancialInstitutionDto, session: AsyncSession = Depends(get_session)):
     async with session.begin():
         stmt = select(FinancialInstitutionDao).filter(FinancialInstitutionDao.lei == fi.lei)
@@ -32,6 +35,7 @@ async def create_group(request: Request, fi: FinancialInstitutionDto, session: A
         return kc_id, existing_fi
     
 @router.post("/{lei}/domains/", response_model=List[FinancialInsitutionDomainDto])
+@requires(["query-groups", "manage-users"])
 async def add_domain(request: Request, lei: str, domains: List[FinancialInsitutionDomainCreate], session: AsyncSession = Depends(get_session)):
     async with session.begin():
         daos = set(map(lambda dto: FinancialInstitutionDomainDao(domain=dto.domain, lei=lei), domains))
