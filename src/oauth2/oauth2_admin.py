@@ -1,13 +1,13 @@
+from http import HTTPStatus
 import logging
 import os
 from typing import Dict, Any
 
 import jose.jwt
-import keycloak.exceptions as kce
 import requests
 from fastapi import HTTPException
 
-from keycloak import KeycloakAdmin, KeycloakError, KeycloakOpenIDConnection
+from keycloak import KeycloakAdmin, KeycloakOpenIDConnection, exceptions as kce
 
 log = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class OAuth2Admin:
             log.exception("Failed to upsert group, lei: %s, name: %s", lei, name)
             raise HTTPException(status_code=e.response_code, detail="Failed to upsert group")
             
-    def get_group(self, lei: str) -> str | None:
+    def get_group(self, lei: str) -> Dict[str, Any] | None:
         try:
             return self._admin.get_group_by_path(f"/{lei}")
         except:
@@ -72,5 +72,12 @@ class OAuth2Admin:
         except kce.KeycloakError as e:
             log.exception("Failed to associate user %s to group %s", user_id, group_id)
             raise HTTPException(status_code=e.response_code, detail="Failed to associate user to group")
+        
+    def associate_to_lei(self, user_id: str, lei: str) -> None:
+        group = self.get_group(lei)
+        if group is not None:
+            self.associate_to_group(user_id, group["id"])
+        else:
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="No institution found for given LEI")
 
 oauth2_admin = OAuth2Admin()

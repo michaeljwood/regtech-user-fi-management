@@ -20,6 +20,6 @@ async def update_me(request: Request, user: Dict[str, Any]):
 
 @router.put("/me/groups/", status_code=HTTPStatus.ACCEPTED)
 @requires("manage-account")
-async def associate_group(request: Request, groups: Set[Any]):
+async def associate_group(request: Request, groups: Set[str]):
     for group in groups:
         oauth2_admin.associate_to_group(request.user.id, group)
