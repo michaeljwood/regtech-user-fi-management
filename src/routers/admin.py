@@ -23,3 +23,9 @@ async def update_me(request: Request, user: Dict[str, Any]):
 async def associate_group(request: Request, groups: Set[str]):
     for group in groups:
         oauth2_admin.associate_to_group(request.user.id, group)
+
+@router.put("/me/institutions/", status_code=HTTPStatus.ACCEPTED)
+@requires("manage-account")
+async def associate_lei(request: Request, leis: Set[str]):
+    for lei in leis:
+        oauth2_admin.associate_to_lei(request.user.id, lei)
