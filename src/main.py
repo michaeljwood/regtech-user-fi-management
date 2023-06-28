@@ -25,13 +25,11 @@ app = FastAPI()
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exception: HTTPException) -> JSONResponse:
-    print("\nhttp exc\n")
-    log.error(exception, exc_info=True)
+    log.error(exception, exc_info=True, stack_info=True)
     return JSONResponse(status_code=exception.status_code, content={"message": exception.detail})
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exception: Exception) -> JSONResponse:
-    print("\ngeneral exc\n")
     log.error(exception, exc_info=True, stack_info=True)
     return JSONResponse(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, content={"message": "server error"})
 
