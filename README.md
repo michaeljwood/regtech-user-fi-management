@@ -2,7 +2,7 @@
 This app communicates with Keycloak to provide some user management functionality, as well as serving as `Institutions API` to retrieve information about institutions.
 
 ### Dependencies
-[Poetry](https://python-poetry.org/) is used as the package management tool. Once installed, just running `poetry isntall` in the root of the project should install all the dependencies needed by the app.
+[Poetry](https://python-poetry.org/) is used as the package management tool. Once installed, just running `poetry install` in the root of the project should install all the dependencies needed by the app.
 
 ## Pre-requesites
 Keycloak needs to be running, and configured through environment variables, or using `.env` file, refer to [.env.local](./src/.env.local) file for all the variables. Institutions Postgres DB also needs to running, and configured, refer to [.env.local](./src/.env.local).
