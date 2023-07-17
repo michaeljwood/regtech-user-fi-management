@@ -1,6 +1,6 @@
 import os
 import logging
-import env
+import env  # noqa: F401
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
