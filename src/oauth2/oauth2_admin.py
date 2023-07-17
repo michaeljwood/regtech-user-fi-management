@@ -11,6 +11,7 @@ from keycloak import KeycloakAdmin, KeycloakOpenIDConnection, exceptions as kce
 
 log = logging.getLogger(__name__)
 
+
 class OAuth2Admin:
     def __init__(self) -> None:
         self._keys = None
@@ -18,7 +19,7 @@ class OAuth2Admin:
             server_url=os.getenv("KC_URL"),
             realm_name=os.getenv("KC_REALM"),
             client_id=os.getenv("KC_ADMIN_CLIENT_ID"),
-            client_secret_key=os.getenv("KC_ADMIN_CLIENT_SECRET")
+            client_secret_key=os.getenv("KC_ADMIN_CLIENT_SECRET"),
         )
         self._admin = KeycloakAdmin(connection=conn)
 
@@ -29,7 +30,7 @@ class OAuth2Admin:
                 key=self._get_keys(),
                 issuer=os.getenv("KC_REALM_URL"),
                 audience=os.getenv("AUTH_CLIENT"),
-                options={"verify_at_hash": False, "verify_aud": False}
+                options={"verify_at_hash": False, "verify_aud": False},
             )
         except jose.ExpiredSignatureError:
             pass
@@ -39,14 +40,16 @@ class OAuth2Admin:
             response = requests.get(os.getenv("CERTS_URL"))
             self._keys = response.json()
         return self._keys
-    
+
     def update_user(self, user_id: str, payload: Dict[str, Any]) -> None:
         try:
             self._admin.update_user(user_id, payload)
         except kce.KeycloakError as e:
             log.exception("Failed to update user: %s", user_id, extra=payload)
-            raise HTTPException(status_code=e.response_code, detail="Failed to update user")
-        
+            raise HTTPException(
+                status_code=e.response_code, detail="Failed to update user"
+            )
+
     def upsert_group(self, lei: str, name: str) -> str:
         try:
             group_payload = {"name": lei, "attributes": {"fi_name": [name]}}
@@ -58,26 +61,34 @@ class OAuth2Admin:
                 return group["id"]
         except kce.KeycloakError as e:
             log.exception("Failed to upsert group, lei: %s, name: %s", lei, name)
-            raise HTTPException(status_code=e.response_code, detail="Failed to upsert group")
-            
+            raise HTTPException(
+                status_code=e.response_code, detail="Failed to upsert group"
+            )
+
     def get_group(self, lei: str) -> Dict[str, Any] | None:
         try:
             return self._admin.get_group_by_path(f"/{lei}")
-        except:
+        except kce.KeycloakError:
             return None
-        
+
     def associate_to_group(self, user_id: str, group_id: str) -> None:
         try:
             self._admin.group_user_add(user_id, group_id)
         except kce.KeycloakError as e:
             log.exception("Failed to associate user %s to group %s", user_id, group_id)
-            raise HTTPException(status_code=e.response_code, detail="Failed to associate user to group")
-        
+            raise HTTPException(
+                status_code=e.response_code, detail="Failed to associate user to group"
+            )
+
     def associate_to_lei(self, user_id: str, lei: str) -> None:
         group = self.get_group(lei)
         if group is not None:
             self.associate_to_group(user_id, group["id"])
         else:
-            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail="No institution found for given LEI")
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail="No institution found for given LEI",
+            )
+
 
 oauth2_admin = OAuth2Admin()
