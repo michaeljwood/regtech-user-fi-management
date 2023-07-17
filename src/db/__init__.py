@@ -8,6 +8,7 @@ __all__ = [
     "FinancialInstitutionWithDomainsDto",
     "FinancialInsitutionDomainDto",
     "FinancialInsitutionDomainCreate",
+    "institutions_repo",
 ]
 
 from .database import engine, Base, get_session
@@ -18,3 +19,4 @@ from .dto import (
     FinancialInsitutionDomainDto,
     FinancialInsitutionDomainCreate,
 )
+from .repo import institutions_repo
