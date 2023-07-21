@@ -1,15 +1,19 @@
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncAttrs, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    async_sessionmaker,
+    async_scoped_session,
+)
+from asyncio import current_task
 
 DB_URL = os.getenv("INST_CONN")
 DB_SCHEMA = os.getenv("INST_DB_SCHEMA", "public")
-
 engine = create_async_engine(DB_URL, echo=True).execution_options(
     schema_translate_map={None: DB_SCHEMA}
 )
-
-SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+SessionLocal = async_scoped_session(
+    async_sessionmaker(engine, expire_on_commit=False), current_task
+)
 
 
 async def get_session():
@@ -18,7 +22,3 @@ async def get_session():
         yield session
     finally:
         await session.close()
-
-
-class Base(AsyncAttrs, DeclarativeBase):
-    pass

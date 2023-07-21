@@ -1,14 +1,15 @@
-from fastapi import Depends, Request
+from fastapi import Depends, Request, HTTPException
+from http import HTTPStatus
 from oauth2 import oauth2_admin
 from util import Router
 from typing import List, Tuple
-from db import (
-    get_session,
+from entities.engine import get_session
+from entities.repo import institutions_repo as repo
+from entities.models import (
     FinancialInstitutionDto,
     FinancialInstitutionWithDomainsDto,
     FinancialInsitutionDomainDto,
     FinancialInsitutionDomainCreate,
-    institutions_repo as repo,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.authentication import requires
@@ -45,7 +46,10 @@ async def create_institution(
 async def get_institution(
     request: Request, lei: str, session: AsyncSession = Depends(get_session)
 ):
-    return await repo.get_institution(session, lei)
+    res = await repo.get_institution(session, lei)
+    if not res:
+        raise HTTPException(HTTPStatus.NOT_FOUND, f"{lei} not found.")
+    return res
 
 
 @router.post("/{lei}/domains/", response_model=List[FinancialInsitutionDomainDto])
