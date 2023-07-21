@@ -18,6 +18,20 @@ python-jose = "^3.3.0"
 requests = "^2.31.0"
 asyncpg = "^0.27.0"
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.278"
+black = "^23.7.0"
+httpx = "^0.24.1"
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.1"
+aiosqlite = "^0.19.0"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = [
+  "src"
+]
+
 
 [build-system]
 requires = ["poetry-core"]
