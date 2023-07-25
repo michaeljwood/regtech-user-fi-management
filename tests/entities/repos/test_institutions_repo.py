@@ -9,7 +9,7 @@ from entities.models import (
 from entities.repos import institutions_repo as repo
 
 
-class TestInstitutions:
+class TestInstitutionsRepo:
     @pytest.fixture(scope="function", autouse=True)
     async def setup(
         self,
