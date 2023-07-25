@@ -45,9 +45,6 @@ class BearerTokenAuthBackend(AuthenticationBackend):
     async def authenticate(
         self, conn: HTTPConnection
     ) -> Coroutine[Any, Any, Tuple[AuthCredentials, BaseUser] | None]:
-        print(f"baseurl: {conn.url.path}")
-        if conn.url.path.endswith("v1/institutions"):
-            return None
         try:
             token = await self.token_bearer(conn)
             claims = oauth2_admin.get_claims(token)
