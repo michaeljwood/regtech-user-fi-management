@@ -4,7 +4,7 @@ from oauth2 import oauth2_admin
 from util import Router
 from typing import List, Tuple
 from entities.engine import get_session
-from entities.repo import institutions_repo as repo
+from entities.repos import institutions_repo as repo
 from entities.models import (
     FinancialInstitutionDto,
     FinancialInstitutionWithDomainsDto,

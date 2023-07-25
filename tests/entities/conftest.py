@@ -1,8 +1,14 @@
 import asyncio
 import pytest
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngine
-from src.entities.models import Base
+from asyncio import current_task
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncEngine,
+    async_scoped_session,
+    async_sessionmaker,
+)
+from entities.models import Base
 
 
 @pytest.fixture(scope="session")
@@ -39,6 +45,9 @@ async def setup_db(
 
 
 @pytest.fixture(scope="function")
-async def session(request: pytest.FixtureRequest, engine: AsyncEngine):
-    async with AsyncSession(engine) as session:
+async def session(engine: AsyncEngine):
+    Session = async_scoped_session(
+        async_sessionmaker(engine, expire_on_commit=False), current_task
+    )
+    async with Session() as session:
         yield session

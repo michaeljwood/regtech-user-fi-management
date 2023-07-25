@@ -30,7 +30,7 @@ pytest-cov = "^4.1.0"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 pythonpath = [
-  "src", "."
+  "src"
 ]
 
 
