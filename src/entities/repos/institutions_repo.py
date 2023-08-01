@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import (
+from entities.models import (
     FinancialInstitutionDao,
     FinancialInstitutionDomainDao,
     FinancialInstitutionDto,
@@ -28,8 +28,8 @@ async def get_institutions(
                 FinancialInstitutionDomainDao,
                 FinancialInstitutionDao.lei == FinancialInstitutionDomainDao.lei,
             ).filter(FinancialInstitutionDomainDao.domain.like(search))
-        res = await session.execute(stmt)
-        return res.unique().scalars().all()
+        res = await session.scalars(stmt)
+        return res.unique().all()
 
 
 async def get_institution(session: AsyncSession, lei: str) -> FinancialInstitutionDao:
@@ -39,9 +39,7 @@ async def get_institution(session: AsyncSession, lei: str) -> FinancialInstituti
             .options(joinedload(FinancialInstitutionDao.domains))
             .filter(FinancialInstitutionDao.lei == lei)
         )
-        res = await session.execute(stmt)
-        existing_fi = res.unique().scalar_one_or_none()
-        return existing_fi
+        return await session.scalar(stmt)
 
 
 async def upsert_institution(

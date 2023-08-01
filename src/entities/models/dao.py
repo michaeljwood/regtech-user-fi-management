@@ -1,8 +1,12 @@
 from datetime import datetime
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
-from . import Base
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
 
 class AuditMixin(object):
