@@ -2,6 +2,7 @@ from fastapi import Depends, Request, HTTPException
 from http import HTTPStatus
 from oauth2 import oauth2_admin
 from util import Router
+from dependencies import parse_leis
 from typing import Annotated, List, Tuple
 from entities.engine import get_session
 from entities.repos import institutions_repo as repo
@@ -28,11 +29,14 @@ router = Router(dependencies=[Depends(set_db)])
 @requires("authenticated")
 async def get_institutions(
     request: Request,
+    leis: List[str] = Depends(parse_leis),
     domain: str = "",
     page: int = 0,
     count: int = 100,
 ):
-    return await repo.get_institutions(request.state.db_session, domain, page, count)
+    return await repo.get_institutions(
+        request.state.db_session, leis, domain, page, count
+    )
 
 
 @router.post("/", response_model=Tuple[str, FinancialInstitutionDto])

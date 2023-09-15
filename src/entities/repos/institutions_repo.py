@@ -14,7 +14,11 @@ from entities.models import (
 
 
 async def get_institutions(
-    session: AsyncSession, domain: str = "", page: int = 0, count: int = 100
+    session: AsyncSession,
+    leis: List[str] = None,
+    domain: str = "",
+    page: int = 0,
+    count: int = 100,
 ) -> List[FinancialInstitutionDao]:
     async with session.begin():
         stmt = (
@@ -23,7 +27,9 @@ async def get_institutions(
             .limit(count)
             .offset(page * count)
         )
-        if d := domain.strip():
+        if leis:
+            stmt = stmt.filter(FinancialInstitutionDao.lei.in_(leis))
+        elif d := domain.strip():
             search = "%{}%".format(d)
             stmt = stmt.join(
                 FinancialInstitutionDomainDao,
