@@ -1,7 +1,7 @@
 from http import HTTPStatus
 import logging
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Set
 
 import jose.jwt
 import requests
@@ -87,6 +87,10 @@ class OAuth2Admin:
                 status_code=HTTPStatus.BAD_REQUEST,
                 detail="No institution found for given LEI",
             )
+
+    def associate_to_leis(self, user_id: str, leis: Set[str]):
+        for lei in leis:
+            self.associate_to_lei(user_id, lei)
 
 
 oauth2_admin = OAuth2Admin()
