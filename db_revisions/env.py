@@ -1,13 +1,9 @@
 import os
 from dotenv import load_dotenv
-
 from logging.config import fileConfig
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
+from sqlalchemy import engine_from_config, pool
 from alembic import context
-from entities import models
+from entities.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -17,17 +13,6 @@ config = context.config
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = models.Base.metadata
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 # this specific to SBL configuration
 
@@ -42,10 +27,23 @@ INST_DB_USER = os.environ.get("INST_DB_USER")
 INST_DB_PWD = os.environ.get("INST_DB_PWD")
 INST_DB_HOST = os.environ.get("INST_DB_HOST")
 INST_DB_NAME = os.environ.get("INST_DB_NAME")
+INST_DB_SCHEMA = os.environ.get("INST_DB_SCHEMA")
 INST_CONN = f"postgresql://{INST_DB_USER}:{INST_DB_PWD}@{INST_DB_HOST}/{INST_DB_NAME}"
 config.set_main_option("sqlalchemy.url", INST_CONN)
 
 # end specific SBL configuration
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+
+target_metadata = Base.metadata
+target_metadata.schema = INST_DB_SCHEMA
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -79,17 +77,23 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
 
-    with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+    connectable = context.config.attributes.get("connection", None)
 
-        with context.begin_transaction():
-            context.run_migrations()
+    if connectable is None:
+        connectable = engine_from_config(
+            context.config.get_section(context.config.config_ini_section),
+            prefix="sqlalchemy.",
+            poolclass=pool.NullPool,
+        )
+
+        with connectable.connect() as connection:
+            context.configure(
+                connection=connection, target_metadata=target_metadata, version_table_schema=target_metadata.schema
+            )
+
+            with context.begin_transaction():
+                context.run_migrations()
 
 
 if context.is_offline_mode():
