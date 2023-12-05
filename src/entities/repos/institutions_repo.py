@@ -30,11 +30,7 @@ async def get_institutions(
         if leis is not None:
             stmt = stmt.filter(FinancialInstitutionDao.lei.in_(leis))
         elif d := domain.strip():
-            search = "%{}%".format(d)
-            stmt = stmt.join(
-                FinancialInstitutionDomainDao,
-                FinancialInstitutionDao.lei == FinancialInstitutionDomainDao.lei,
-            ).filter(FinancialInstitutionDomainDao.domain.like(search))
+            stmt = stmt.join(FinancialInstitutionDomainDao).filter(FinancialInstitutionDomainDao.domain == d)
         res = await session.scalars(stmt)
         return res.unique().all()
 
