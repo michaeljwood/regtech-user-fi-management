@@ -6,7 +6,13 @@ from entities.models import (
     FinancialInstitutionDomainDao,
     FinancialInsitutionDomainCreate,
 )
-from entities.models import DeniedDomainDao
+from entities.models import (
+    DeniedDomainDao,
+    AddressStateDao,
+    FederalRegulatorDao,
+    HMDAInstitutionTypeDao,
+    SBLInstitutionTypeDao,
+)
 from entities.repos import institutions_repo as repo
 
 
@@ -16,23 +22,108 @@ class TestInstitutionsRepo:
         self,
         transaction_session: AsyncSession,
     ):
+        state_ga, state_ca, state_fl = (
+            AddressStateDao(code="GA", name="Georgia"),
+            AddressStateDao(code="CA", name="California"),
+            AddressStateDao(code="FL", name="Florida"),
+        )
+        fr_dao_fri1, fr_dao_fri2, fr_dao_fri3 = (
+            FederalRegulatorDao(id="FRI1", name="Test Federal Regulator ID 1"),
+            FederalRegulatorDao(id="FRI2", name="Test Federal Regulator ID 2"),
+            FederalRegulatorDao(id="FRI3", name="Test Federal Regulator ID 3"),
+        )
+        hmda_it_dao_hit1, hmda_it_dao_hit2, hmda_it_dao_hit3 = (
+            HMDAInstitutionTypeDao(id="HIT1", name="Test HMDA Instituion ID 1"),
+            HMDAInstitutionTypeDao(id="HIT2", name="Test HMDA Instituion ID 2"),
+            HMDAInstitutionTypeDao(id="HIT3", name="Test HMDA Instituion ID 3"),
+        )
+        sbl_it_dao_sit1, sbl_it_dao_sit2, sbl_it_dao_sit3 = (
+            SBLInstitutionTypeDao(id="SIT1", name="Test SBL Instituion ID 1"),
+            SBLInstitutionTypeDao(id="SIT2", name="Test SBL Instituion ID 2"),
+            SBLInstitutionTypeDao(id="SIT3", name="Test SBL Instituion ID 3"),
+        )
         fi_dao_123, fi_dao_456, fi_dao_sub_456 = (
             FinancialInstitutionDao(
                 name="Test Bank 123",
                 lei="TESTBANK123",
                 domains=[FinancialInstitutionDomainDao(domain="test.bank.1", lei="TESTBANK123")],
+                tax_id="123456789",
+                rssd_id=1234,
+                primary_federal_regulator_id="FRI1",
+                hmda_institution_type_id="HIT1",
+                sbl_institution_type_id="SIT1",
+                hq_address_street_1="Test Address Street 1",
+                hq_address_street_2="",
+                hq_address_city="Test City 1",
+                hq_address_state_code="GA",
+                hq_address_zip="00000",
+                parent_lei="PARENTTESTBANK123",
+                parent_legal_name="PARENT TEST BANK 123",
+                parent_rssd_id=12345,
+                top_holder_lei="TOPHOLDERLEI123",
+                top_holder_legal_name="TOP HOLDER LEI 123",
+                top_holder_rssd_id=123456,
             ),
             FinancialInstitutionDao(
                 name="Test Bank 456",
                 lei="TESTBANK456",
                 domains=[FinancialInstitutionDomainDao(domain="test.bank.2", lei="TESTBANK456")],
+                tax_id="987654321",
+                rssd_id=4321,
+                primary_federal_regulator_id="FRI2",
+                hmda_institution_type_id="HIT2",
+                sbl_institution_type_id="SIT2",
+                hq_address_street_1="Test Address Street 2",
+                hq_address_street_2="",
+                hq_address_city="Test City 2",
+                hq_address_state_code="CA",
+                hq_address_zip="11111",
+                parent_lei="PARENTTESTBANK456",
+                parent_legal_name="PARENT TEST BANK 456",
+                parent_rssd_id=54321,
+                top_holder_lei="TOPHOLDERLEI456",
+                top_holder_legal_name="TOP HOLDER LEI 456",
+                top_holder_rssd_id=654321,
             ),
             FinancialInstitutionDao(
                 name="Test Sub Bank 456",
                 lei="TESTSUBBANK456",
                 domains=[FinancialInstitutionDomainDao(domain="sub.test.bank.2", lei="TESTSUBBANK456")],
+                tax_id="765432198",
+                rssd_id=2134,
+                primary_federal_regulator_id="FRI3",
+                hmda_institution_type_id="HIT3",
+                sbl_institution_type_id="SIT3",
+                hq_address_street_1="Test Address Street 3",
+                hq_address_street_2="",
+                hq_address_city="Test City 3",
+                hq_address_state_code="FL",
+                hq_address_zip="11111",
+                parent_lei="PARENTTESTBANK456",
+                parent_legal_name="PARENT TEST SUB BANK 456",
+                parent_rssd_id=21435,
+                top_holder_lei="TOPHOLDERLEI456",
+                top_holder_legal_name="TOP HOLDER LEI SUB BANK 456",
+                top_holder_rssd_id=321654,
             ),
         )
+
+        transaction_session.add(state_ga)
+        transaction_session.add(state_ca)
+        transaction_session.add(state_fl)
+
+        transaction_session.add(fr_dao_fri1)
+        transaction_session.add(fr_dao_fri2)
+        transaction_session.add(fr_dao_fri3)
+
+        transaction_session.add(hmda_it_dao_hit1)
+        transaction_session.add(hmda_it_dao_hit2)
+        transaction_session.add(hmda_it_dao_hit3)
+
+        transaction_session.add(sbl_it_dao_sit1)
+        transaction_session.add(sbl_it_dao_sit2)
+        transaction_session.add(sbl_it_dao_sit3)
+
         transaction_session.add(fi_dao_123)
         transaction_session.add(fi_dao_456)
         transaction_session.add(fi_dao_sub_456)
@@ -72,7 +163,26 @@ class TestInstitutionsRepo:
     async def test_add_institution(self, transaction_session: AsyncSession):
         await repo.upsert_institution(
             transaction_session,
-            FinancialInstitutionDao(name="New Bank 123", lei="NEWBANK123"),
+            FinancialInstitutionDao(
+                name="New Bank 123",
+                lei="NEWBANK123",
+                tax_id="654321987",
+                rssd_id=6543,
+                primary_federal_regulator_id="FRI3",
+                hmda_institution_type_id="HIT3",
+                sbl_institution_type_id="SIT3",
+                hq_address_street_1="Test Address Street 3",
+                hq_address_street_2="",
+                hq_address_city="Test City 3",
+                hq_address_state_code="FL",
+                hq_address_zip="22222",
+                parent_lei="PARENTNEWBANK123",
+                parent_legal_name="PARENT NEW BANK 123",
+                parent_rssd_id=76543,
+                top_holder_lei="TOPHOLDERNEWBANKLEI123",
+                top_holder_legal_name="TOP HOLDER NEW BANK LEI 123",
+                top_holder_rssd_id=876543,
+            ),
         )
         res = await repo.get_institutions(transaction_session)
         assert len(res) == 4
@@ -101,3 +211,35 @@ class TestInstitutionsRepo:
         await transaction_session.commit()
         assert await repo.is_domain_allowed(transaction_session, "yahoo.com") is False
         assert await repo.is_domain_allowed(transaction_session, "gmail.com") is True
+
+    async def test_institution_mapped_to_state_valid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK123"])
+        assert res[0].hq_address_state.name == "Georgia"
+
+    async def test_institution_mapped_to_state_invalid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK456"])
+        assert res[0].hq_address_state.name != "Georgia"
+
+    async def test_institution_mapped_to_federal_regulator_valid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK456"])
+        assert res[0].primary_federal_regulator.name != "Test Federal Regulator ID 1"
+
+    async def test_institution_mapped_to_federal_regulator_invalid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK123"])
+        assert res[0].primary_federal_regulator.name == "Test Federal Regulator ID 1"
+
+    async def test_institution_mapped_to_hmda_it_valid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK123"])
+        assert res[0].hmda_institution_type.name == "Test HMDA Instituion ID 1"
+
+    async def test_institution_mapped_to_hmda_it_invalid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK456"])
+        assert res[0].hmda_institution_type.name != "Test HMDA Instituion ID 1"
+
+    async def test_institution_mapped_to_sbl_it_valid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK123"])
+        assert res[0].sbl_institution_type.name == "Test SBL Instituion ID 1"
+
+    async def test_institution_mapped_to_sbl_it_invalid(self, query_session: AsyncSession):
+        res = await repo.get_institutions(query_session, leis=["TESTBANK456"])
+        assert res[0].sbl_institution_type.name != "Test SBL Instituion ID 1"

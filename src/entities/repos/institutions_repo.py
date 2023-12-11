@@ -51,7 +51,26 @@ async def upsert_institution(session: AsyncSession, fi: FinancialInstitutionDto)
         res = await session.execute(stmt)
         db_fi = res.scalar_one_or_none()
         if db_fi is None:
-            db_fi = FinancialInstitutionDao(lei=fi.lei, name=fi.name)
+            db_fi = FinancialInstitutionDao(
+                lei=fi.lei,
+                name=fi.name,
+                tax_id=fi.tax_id,
+                rssd_id=fi.rssd_id,
+                primary_federal_regulator_id=fi.primary_federal_regulator_id,
+                hmda_institution_type_id=fi.hmda_institution_type_id,
+                sbl_institution_type_id=fi.sbl_institution_type_id,
+                hq_address_street_1=fi.hq_address_street_1,
+                hq_address_street_2=fi.hq_address_street_2,
+                hq_address_city=fi.hq_address_city,
+                hq_address_state_code=fi.hq_address_state_code,
+                hq_address_zip=fi.hq_address_zip,
+                parent_lei=fi.parent_lei,
+                parent_legal_name=fi.parent_legal_name,
+                parent_rssd_id=fi.parent_rssd_id,
+                top_holder_lei=fi.top_holder_lei,
+                top_holder_legal_name=fi.top_holder_legal_name,
+                top_holder_rssd_id=fi.top_holder_rssd_id,
+            )
             session.add(db_fi)
         else:
             db_fi.name = fi.name

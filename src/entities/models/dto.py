@@ -24,6 +24,22 @@ class FinancialInstitutionBase(BaseModel):
 
 class FinancialInstitutionDto(FinancialInstitutionBase):
     lei: str
+    tax_id: str
+    rssd_id: int
+    primary_federal_regulator_id: str
+    hmda_institution_type_id: str
+    sbl_institution_type_id: str
+    hq_address_street_1: str
+    hq_address_street_2: str
+    hq_address_city: str
+    hq_address_state_code: str
+    hq_address_zip: str
+    parent_lei: str
+    parent_legal_name: str
+    parent_rssd_id: int
+    top_holder_lei: str
+    top_holder_legal_name: str
+    top_holder_rssd_id: int
 
     class Config:
         from_attributes = True
@@ -51,6 +67,50 @@ class UserProfile(BaseModel):
 
 class FinanicialInstitutionAssociationDto(FinancialInstitutionDto):
     approved: bool
+
+
+class FederalRegulatorBase(BaseModel):
+    id: str
+
+
+class FederalRegulatorDto(FederalRegulatorBase):
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class HMDAInstitutionTypeBase(BaseModel):
+    id: str
+
+
+class HMDAInstitutionTypeDto(HMDAInstitutionTypeBase):
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class SBLInstitutionTypeBase(BaseModel):
+    id: str
+
+
+class SBLInstitutionTypeDto(SBLInstitutionTypeBase):
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class AddressStateBase(BaseModel):
+    code: str
+
+
+class AddressStateDto(AddressStateBase):
+    name: str
+
+    class Config:
+        from_attributes = True
 
 
 class AuthenticatedUser(BaseUser, BaseModel):
