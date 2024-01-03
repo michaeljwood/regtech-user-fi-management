@@ -27,6 +27,14 @@ $ docker compose up -d pg keycloak
 ![Docker](images/sbl_project_svcs.png)
 
 ---
+## Resetting DB and Seeding mock data
+On app startup, alembic creates all the tables and seeds the lookup tables. 
+Running the below script with the 'reset' argument will reset the db:
+db_revisions/dev_setup.sh reset
+Passing the 'reset-then-seed' argument to the script will reset the db and then seed the lookup tables:
+db_revisions/dev_setup.sh reset-then-seed
+
+---
 ## Running the app
 Once the [Dependencies](#dependencies), and [Pre-requisites](#pre-requisites) have been satisfied:
 -  All dependencies installed
