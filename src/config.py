@@ -1,7 +1,8 @@
 import os
+from urllib import parse
 from typing import Dict, Any
 
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, field_validator, ValidationInfo
 from pydantic.networks import HttpUrl, PostgresDsn
 from pydantic.types import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,8 +15,13 @@ if os.getenv("ENV", "LOCAL") == "LOCAL":
 
 
 class Settings(BaseSettings):
-    inst_conn: PostgresDsn
     inst_db_schema: str = "public"
+    inst_db_name: str
+    inst_db_user: str
+    inst_db_pwd: str
+    inst_db_host: str
+    inst_db_scheme: str = "postgresql+asyncpg"
+    inst_conn: PostgresDsn | None = None
     auth_client: str
     auth_url: HttpUrl
     token_url: HttpUrl
@@ -30,6 +36,18 @@ class Settings(BaseSettings):
     def __init__(self, **data):
         super().__init__(**data)
         self.set_jwt_opts()
+
+    @field_validator("inst_conn", mode="before")
+    @classmethod
+    def build_postgres_dsn(cls, postgres_dsn, info: ValidationInfo) -> Any:
+        postgres_dsn = PostgresDsn.build(
+            scheme=info.data.get("inst_db_scheme"),
+            username=info.data.get("inst_db_user"),
+            password=parse.quote(info.data.get("inst_db_pwd"), safe=""),
+            host=info.data.get("inst_db_host"),
+            path=info.data.get("inst_db_name"),
+        )
+        return str(postgres_dsn)
 
     def set_jwt_opts(self) -> None:
         """
