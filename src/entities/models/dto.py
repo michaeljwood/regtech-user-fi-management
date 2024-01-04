@@ -73,22 +73,8 @@ class FederalRegulatorDto(FederalRegulatorBase):
         from_attributes = True
 
 
-class HMDAInstitutionTypeBase(BaseModel):
+class InstitutionTypeDto(BaseModel):
     id: str
-
-
-class HMDAInstitutionTypeDto(HMDAInstitutionTypeBase):
-    name: str
-
-    class Config:
-        from_attributes = True
-
-
-class SBLInstitutionTypeBase(BaseModel):
-    id: str
-
-
-class SBLInstitutionTypeDto(SBLInstitutionTypeBase):
     name: str
 
     class Config:
@@ -108,8 +94,8 @@ class AddressStateDto(AddressStateBase):
 
 class FinancialInstitutionWithRelationsDto(FinancialInstitutionDto):
     primary_federal_regulator: FederalRegulatorDto | None = None
-    hmda_institution_type: HMDAInstitutionTypeDto | None = None
-    sbl_institution_type: SBLInstitutionTypeDto | None = None
+    hmda_institution_type: InstitutionTypeDto | None = None
+    sbl_institution_type: InstitutionTypeDto | None = None
     hq_address_state: AddressStateDto
     domains: List[FinancialInsitutionDomainDto] = []
 

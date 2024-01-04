@@ -379,3 +379,32 @@ class TestInstitutionsApi:
         assert res.status_code == 200
         get_institutions_mock.assert_called_once_with(ANY, [])
         assert res.json() == []
+
+    def test_get_institution_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        mock = mocker.patch("entities.repos.institutions_repo.get_sbl_types")
+        mock.return_value = []
+        client = TestClient(app_fixture)
+        res = client.get("/v1/institutions/types/sbl")
+        assert res.status_code == 200
+
+        mock = mocker.patch("entities.repos.institutions_repo.get_hmda_types")
+        mock.return_value = []
+        res = client.get("/v1/institutions/types/hmda")
+        assert res.status_code == 200
+
+        res = client.get("/v1/institutions/types/blah")
+        assert res.status_code == 422
+
+    def test_get_address_states(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        mock = mocker.patch("entities.repos.institutions_repo.get_address_states")
+        mock.return_value = []
+        client = TestClient(app_fixture)
+        res = client.get("/v1/institutions/address-states")
+        assert res.status_code == 200
+
+    def test_get_federal_regulators(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        mock = mocker.patch("entities.repos.institutions_repo.get_federal_regulators")
+        mock.return_value = []
+        client = TestClient(app_fixture)
+        res = client.get("/v1/institutions/regulators")
+        assert res.status_code == 200

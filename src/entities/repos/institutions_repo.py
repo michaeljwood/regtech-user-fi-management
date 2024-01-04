@@ -4,12 +4,18 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .repo_utils import query_type
+
 from entities.models import (
     FinancialInstitutionDao,
     FinancialInstitutionDomainDao,
     FinancialInstitutionDto,
     FinancialInsitutionDomainCreate,
+    HMDAInstitutionTypeDao,
+    SBLInstitutionTypeDao,
     DeniedDomainDao,
+    AddressStateDao,
+    FederalRegulatorDao,
 )
 
 
@@ -43,6 +49,22 @@ async def get_institution(session: AsyncSession, lei: str) -> FinancialInstituti
             .filter(FinancialInstitutionDao.lei == lei)
         )
         return await session.scalar(stmt)
+
+
+async def get_sbl_types(session: AsyncSession) -> List[SBLInstitutionTypeDao]:
+    return await query_type(session, SBLInstitutionTypeDao)
+
+
+async def get_hmda_types(session: AsyncSession) -> List[HMDAInstitutionTypeDao]:
+    return await query_type(session, HMDAInstitutionTypeDao)
+
+
+async def get_address_states(session: AsyncSession) -> List[AddressStateDao]:
+    return await query_type(session, AddressStateDao)
+
+
+async def get_federal_regulators(session: AsyncSession) -> List[FederalRegulatorDao]:
+    return await query_type(session, FederalRegulatorDao)
 
 
 async def upsert_institution(session: AsyncSession, fi: FinancialInstitutionDto) -> FinancialInstitutionDao:

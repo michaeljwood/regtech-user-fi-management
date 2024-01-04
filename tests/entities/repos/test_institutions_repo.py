@@ -132,6 +132,30 @@ class TestInstitutionsRepo:
         transaction_session.add(fi_dao_sub_456)
         await transaction_session.commit()
 
+    async def test_get_sbl_types(self, query_session: AsyncSession):
+        expected_ids = {"SIT1", "SIT2", "SIT3"}
+        res = await repo.get_sbl_types(query_session)
+        assert len(res) == 3
+        assert set([r.id for r in res]) == expected_ids
+
+    async def test_get_hmda_types(self, query_session: AsyncSession):
+        expected_ids = {"HIT1", "HIT2", "HIT3"}
+        res = await repo.get_hmda_types(query_session)
+        assert len(res) == 3
+        assert set([r.id for r in res]) == expected_ids
+
+    async def test_get_address_states(self, query_session: AsyncSession):
+        expected_codes = {"CA", "GA", "FL"}
+        res = await repo.get_address_states(query_session)
+        assert len(res) == 3
+        assert set([r.code for r in res]) == expected_codes
+
+    async def test_get_federal_regulators(self, query_session: AsyncSession):
+        expected_ids = {"FRI1", "FRI2", "FRI3"}
+        res = await repo.get_federal_regulators(query_session)
+        assert len(res) == 3
+        assert set([r.id for r in res]) == expected_ids
+
     async def test_get_institutions(self, query_session: AsyncSession):
         res = await repo.get_institutions(query_session)
         assert len(res) == 3
