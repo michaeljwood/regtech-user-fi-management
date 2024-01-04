@@ -7,6 +7,7 @@ from pydantic.networks import HttpUrl, PostgresDsn
 from pydantic.types import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 JWT_OPTS_PREFIX = "jwt_opts_"
 
 env_files_to_load = [".env"]
