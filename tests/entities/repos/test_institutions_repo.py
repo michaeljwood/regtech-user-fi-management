@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from entities.models import (
     FinancialInstitutionDao,
+    FinancialInstitutionDto,
     FinancialInstitutionDomainDao,
     FinancialInsitutionDomainCreate,
 )
@@ -52,7 +53,7 @@ class TestInstitutionsRepo:
                 rssd_id=1234,
                 primary_federal_regulator_id="FRI1",
                 hmda_institution_type_id="HIT1",
-                sbl_institution_type_id="SIT1",
+                sbl_institution_types=[sbl_it_dao_sit1],
                 hq_address_street_1="Test Address Street 1",
                 hq_address_street_2="",
                 hq_address_city="Test City 1",
@@ -74,7 +75,7 @@ class TestInstitutionsRepo:
                 rssd_id=4321,
                 primary_federal_regulator_id="FRI2",
                 hmda_institution_type_id="HIT2",
-                sbl_institution_type_id="SIT2",
+                sbl_institution_types=[sbl_it_dao_sit2],
                 hq_address_street_1="Test Address Street 2",
                 hq_address_street_2="",
                 hq_address_city="Test City 2",
@@ -96,7 +97,7 @@ class TestInstitutionsRepo:
                 rssd_id=2134,
                 primary_federal_regulator_id="FRI3",
                 hmda_institution_type_id="HIT3",
-                sbl_institution_type_id="SIT3",
+                sbl_institution_types=[sbl_it_dao_sit3],
                 hq_address_street_1="Test Address Street 3",
                 hq_address_street_2="",
                 hq_address_city="Test City 3",
@@ -190,7 +191,7 @@ class TestInstitutionsRepo:
     async def test_add_institution(self, transaction_session: AsyncSession):
         db_fi = await repo.upsert_institution(
             transaction_session,
-            FinancialInstitutionDao(
+            FinancialInstitutionDto(
                 name="New Bank 123",
                 lei="NEWBANK123",
                 is_active=True,
@@ -198,7 +199,7 @@ class TestInstitutionsRepo:
                 rssd_id=6543,
                 primary_federal_regulator_id="FRI3",
                 hmda_institution_type_id="HIT3",
-                sbl_institution_type_id="SIT3",
+                sbl_institution_type_ids=["SIT3"],
                 hq_address_street_1="Test Address Street 3",
                 hq_address_street_2="",
                 hq_address_city="Test City 3",
@@ -215,6 +216,9 @@ class TestInstitutionsRepo:
         assert db_fi.domains == []
         res = await repo.get_institutions(transaction_session)
         assert len(res) == 4
+        new_sbl_types = next(iter([fi for fi in res if fi.lei == "NEWBANK123"])).sbl_institution_types
+        assert len(new_sbl_types) == 1
+        assert next(iter(new_sbl_types)).name == "Test SBL Instituion ID 3"
 
     async def test_add_institution_only_required_fields(
         self, transaction_session: AsyncSession, query_session: AsyncSession
@@ -309,8 +313,8 @@ class TestInstitutionsRepo:
 
     async def test_institution_mapped_to_sbl_it_valid(self, query_session: AsyncSession):
         res = await repo.get_institutions(query_session, leis=["TESTBANK123"])
-        assert res[0].sbl_institution_type.name == "Test SBL Instituion ID 1"
+        assert res[0].sbl_institution_types[0].name == "Test SBL Instituion ID 1"
 
     async def test_institution_mapped_to_sbl_it_invalid(self, query_session: AsyncSession):
         res = await repo.get_institutions(query_session, leis=["TESTBANK456"])
-        assert res[0].sbl_institution_type.name != "Test SBL Instituion ID 1"
+        assert res[0].sbl_institution_types[0].name != "Test SBL Instituion ID 1"
