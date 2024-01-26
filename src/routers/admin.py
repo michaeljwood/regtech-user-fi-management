@@ -3,13 +3,17 @@ from typing import Set
 from fastapi import Depends, Request
 from starlette.authentication import requires
 from dependencies import check_domain
-from util import Router
+
+from regtech_api_commons.api import Router
 from entities.models import UserProfile
 
-from entities.models import AuthenticatedUser
-from oauth2 import oauth2_admin
+from regtech_api_commons.models.auth import AuthenticatedUser
+from regtech_api_commons.oauth2.oauth2_admin import OAuth2Admin
+from config import kc_settings
 
 router = Router()
+
+oauth2_admin = OAuth2Admin(kc_settings)
 
 
 @router.get("/me/", response_model=AuthenticatedUser)

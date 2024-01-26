@@ -1,7 +1,8 @@
 from fastapi import Depends, Request, HTTPException
 from http import HTTPStatus
-from oauth2 import oauth2_admin
-from util import Router
+from regtech_api_commons.oauth2.oauth2_admin import OAuth2Admin
+from config import kc_settings
+from regtech_api_commons.api import Router
 from dependencies import check_domain, parse_leis, get_email_domain
 from typing import Annotated, List, Tuple, Literal
 from entities.engine import get_session
@@ -13,12 +14,14 @@ from entities.models import (
     FinancialInsitutionDomainCreate,
     FinanicialInstitutionAssociationDto,
     InstitutionTypeDto,
-    AuthenticatedUser,
     AddressStateDto,
     FederalRegulatorDto,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.authentication import requires
+from regtech_api_commons.models.auth import AuthenticatedUser
+
+oauth2_admin = OAuth2Admin(kc_settings)
 
 InstitutionType = Literal["sbl", "hmda"]
 
