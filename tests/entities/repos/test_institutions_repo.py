@@ -1,4 +1,5 @@
 import pytest
+from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from entities.models import (
@@ -333,3 +334,35 @@ class TestInstitutionsRepo:
     async def test_institution_mapped_to_sbl_it_invalid(self, query_session: AsyncSession):
         res = await repo.get_institutions(query_session, leis=["TESTBANK456"])
         assert res[0].sbl_institution_types[0].sbl_type.name != "Test SBL Instituion ID 1"
+
+    async def test_update_sbl_institution_types(
+        self, mocker: MockerFixture, query_session: AsyncSession, transaction_session: AsyncSession
+    ):
+        test_lei = "TESTBANK123"
+        existing_inst = await repo.get_institution(query_session, test_lei)
+        sbl_types = [
+            SblTypeAssociationDto(id="1"),
+            SblTypeAssociationDto(id="2"),
+            SblTypeAssociationDto(id="13", details="test"),
+        ]
+        commit_spy = mocker.patch.object(transaction_session, "commit", wraps=transaction_session.commit)
+        updated_inst = await repo.update_sbl_types(transaction_session, self.auth_user, test_lei, sbl_types)
+        commit_spy.assert_called_once()
+        assert len(existing_inst.sbl_institution_types) == 1
+        assert len(updated_inst.sbl_institution_types) == 3
+        diffs = set(updated_inst.sbl_institution_types).difference(set(existing_inst.sbl_institution_types))
+        assert len(diffs) == 2
+
+    async def test_update_sbl_institution_types_inst_non_exist(
+        self, mocker: MockerFixture, transaction_session: AsyncSession
+    ):
+        test_lei = "NONEXISTINGBANK"
+        sbl_types = [
+            SblTypeAssociationDto(id="1"),
+            SblTypeAssociationDto(id="2"),
+            SblTypeAssociationDto(id="13", details="test"),
+        ]
+        commit_spy = mocker.patch.object(transaction_session, "commit", wraps=transaction_session.commit)
+        res = await repo.update_sbl_types(transaction_session, self.auth_user, test_lei, sbl_types)
+        commit_spy.assert_not_called()
+        assert res is None

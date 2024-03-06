@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from unittest.mock import Mock, ANY
 
 from fastapi import FastAPI
@@ -13,6 +14,7 @@ from entities.models import (
     HMDAInstitutionTypeDao,
     SBLInstitutionTypeDao,
     SblTypeMappingDao,
+    SblTypeAssociationDto,
 )
 
 
@@ -425,3 +427,105 @@ class TestInstitutionsApi:
         client = TestClient(app_fixture)
         res = client.get("/v1/institutions/regulators")
         assert res.status_code == 200
+
+    def test_get_sbl_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        inst_version = 2
+        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock.return_value = FinancialInstitutionDao(
+            version=inst_version,
+            name="Test Bank 123",
+            lei="TESTBANK123",
+            is_active=True,
+            domains=[FinancialInstitutionDomainDao(domain="test.bank", lei="TESTBANK123")],
+            tax_id="123456789",
+            rssd_id=1234,
+            primary_federal_regulator_id="FRI1",
+            primary_federal_regulator=FederalRegulatorDao(id="FRI1", name="FRI1"),
+            hmda_institution_type_id="HIT1",
+            hmda_institution_type=HMDAInstitutionTypeDao(id="HIT1", name="HIT1"),
+            sbl_institution_types=[SblTypeMappingDao(sbl_type=SBLInstitutionTypeDao(id="SIT1", name="SIT1"))],
+            hq_address_street_1="Test Address Street 1",
+            hq_address_street_2="",
+            hq_address_city="Test City 1",
+            hq_address_state_code="GA",
+            hq_address_state=AddressStateDao(code="GA", name="Georgia"),
+            hq_address_zip="00000",
+            parent_lei="PARENTTESTBANK123",
+            parent_legal_name="PARENT TEST BANK 123",
+            parent_rssd_id=12345,
+            top_holder_lei="TOPHOLDERLEI123",
+            top_holder_legal_name="TOP HOLDER LEI 123",
+            top_holder_rssd_id=123456,
+        )
+        client = TestClient(app_fixture)
+        test_lei = "TESTBANK123"
+        res = client.get(f"/v1/institutions/{test_lei}/types/sbl")
+        assert res.status_code == HTTPStatus.OK
+        result = res.json()
+        assert len(result["data"]) == 1
+        assert result["version"] == inst_version
+        assert result["data"][0] == {"sbl_type": {"id": "SIT1", "name": "SIT1"}, "details": None}
+
+    def test_get_sbl_types_no_institution(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock.return_value = None
+        client = TestClient(app_fixture)
+        test_lei = "TESTBANK123"
+        res = client.get(f"/v1/institutions/{test_lei}/types/sbl")
+        assert res.status_code == HTTPStatus.NO_CONTENT
+
+    def test_get_hmda_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        client = TestClient(app_fixture)
+        test_lei = "TESTBANK123"
+        res = client.get(f"/v1/institutions/{test_lei}/types/hmda")
+        assert res.status_code == HTTPStatus.NOT_IMPLEMENTED
+
+    def test_update_institution_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        mock = mocker.patch("entities.repos.institutions_repo.update_sbl_types")
+        client = TestClient(app_fixture)
+        test_lei = "TESTBANK123"
+        res = client.put(
+            f"/v1/institutions/{test_lei}/types/sbl",
+            json={"sbl_institution_types": ["1", {"id": "2"}, {"id": "13", "details": "test"}]},
+        )
+        assert res.status_code == HTTPStatus.OK
+        mock.assert_called_once_with(
+            ANY, ANY, test_lei, ["1", SblTypeAssociationDto(id="2"), SblTypeAssociationDto(id="13", details="test")]
+        )
+
+    def test_update_non_existing_institution_types(
+        self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock
+    ):
+        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock.return_value = None
+        client = TestClient(app_fixture)
+        test_lei = "TESTBANK123"
+        res = client.put(
+            f"/v1/institutions/{test_lei}/types/sbl",
+            json={"sbl_institution_types": ["1", {"id": "2"}, {"id": "13", "details": "test"}]},
+        )
+        assert res.status_code == HTTPStatus.NO_CONTENT
+
+    def test_update_unsupported_institution_types(
+        self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock
+    ):
+        mock = mocker.patch("entities.repos.institutions_repo.update_sbl_types")
+        client = TestClient(app_fixture)
+        test_lei = "TESTBANK123"
+        res = client.put(
+            f"/v1/institutions/{test_lei}/types/hmda",
+            json={"sbl_institution_types": ["1", {"id": "2"}, {"id": "13", "details": "test"}]},
+        )
+        assert res.status_code == HTTPStatus.NOT_IMPLEMENTED
+        mock.assert_not_called()
+
+    def test_update_wrong_institution_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
+        mock = mocker.patch("entities.repos.institutions_repo.update_sbl_types")
+        client = TestClient(app_fixture)
+        test_lei = "TESTBANK123"
+        res = client.put(
+            f"/v1/institutions/{test_lei}/types/test",
+            json={"sbl_institution_types": ["1", {"id": "2"}, {"id": "13", "details": "test"}]},
+        )
+        assert res.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+        mock.assert_not_called()

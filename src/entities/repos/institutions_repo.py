@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence, Set
 
 from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from regtech_api_commons.models import AuthenticatedUser
 
-from .repo_utils import query_type
+from .repo_utils import get_associated_sbl_types, query_type
 
 from entities.models import (
     FinancialInstitutionDao,
@@ -18,17 +18,17 @@ from entities.models import (
     DeniedDomainDao,
     AddressStateDao,
     FederalRegulatorDao,
-    SblTypeMappingDao,
+    SblTypeAssociationDto,
 )
 
 
 async def get_institutions(
     session: AsyncSession,
-    leis: List[str] = None,
+    leis: List[str] | None = None,
     domain: str = "",
     page: int = 0,
     count: int = 100,
-) -> List[FinancialInstitutionDao]:
+) -> Sequence[FinancialInstitutionDao]:
     async with session.begin():
         stmt = (
             select(FinancialInstitutionDao)
@@ -44,7 +44,7 @@ async def get_institutions(
         return res.unique().all()
 
 
-async def get_institution(session: AsyncSession, lei: str) -> FinancialInstitutionDao:
+async def get_institution(session: AsyncSession, lei: str) -> FinancialInstitutionDao | None:
     async with session.begin():
         stmt = (
             select(FinancialInstitutionDao)
@@ -54,19 +54,19 @@ async def get_institution(session: AsyncSession, lei: str) -> FinancialInstituti
         return await session.scalar(stmt)
 
 
-async def get_sbl_types(session: AsyncSession) -> List[SBLInstitutionTypeDao]:
+async def get_sbl_types(session: AsyncSession) -> Sequence[SBLInstitutionTypeDao]:
     return await query_type(session, SBLInstitutionTypeDao)
 
 
-async def get_hmda_types(session: AsyncSession) -> List[HMDAInstitutionTypeDao]:
+async def get_hmda_types(session: AsyncSession) -> Sequence[HMDAInstitutionTypeDao]:
     return await query_type(session, HMDAInstitutionTypeDao)
 
 
-async def get_address_states(session: AsyncSession) -> List[AddressStateDao]:
+async def get_address_states(session: AsyncSession) -> Sequence[AddressStateDao]:
     return await query_type(session, AddressStateDao)
 
 
-async def get_federal_regulators(session: AsyncSession) -> List[FederalRegulatorDao]:
+async def get_federal_regulators(session: AsyncSession) -> Sequence[FederalRegulatorDao]:
     return await query_type(session, FederalRegulatorDao)
 
 
@@ -79,12 +79,7 @@ async def upsert_institution(
         fi_data.pop("version", None)
 
         if "sbl_institution_types" in fi_data:
-            types_association = [
-                SblTypeMappingDao(type_id=t, lei=fi.lei, modified_by=user.id)
-                if isinstance(t, str)
-                else SblTypeMappingDao(type_id=t.id, details=t.details, lei=fi.lei, modified_by=user.id)
-                for t in fi.sbl_institution_types
-            ]
+            types_association = get_associated_sbl_types(fi.lei, user.id, fi.sbl_institution_types)
             fi_data["sbl_institution_types"] = types_association
 
         db_fi = await session.merge(FinancialInstitutionDao(**fi_data, modified_by=user.id))
@@ -93,9 +88,31 @@ async def upsert_institution(
         return db_fi
 
 
+async def update_sbl_types(
+    session: AsyncSession, user: AuthenticatedUser, lei: str, sbl_types: Sequence[SblTypeAssociationDto | str]
+) -> FinancialInstitutionDao | None:
+    if fi := await get_institution(session, lei):
+        new_types = set(get_associated_sbl_types(lei, user.id, sbl_types))
+        old_types = set(fi.sbl_institution_types)
+        add_types = new_types.difference(old_types)
+        remove_types = old_types.difference(new_types)
+
+        fi.sbl_institution_types = [type for type in fi.sbl_institution_types if type not in remove_types]
+        fi.sbl_institution_types.extend(add_types)
+        for type in fi.sbl_institution_types:
+            type.version = fi.version
+        await session.commit()
+        """
+        load the async relational attributes so dto can be properly serialized
+        """
+        for type in fi.sbl_institution_types:
+            await type.awaitable_attrs.sbl_type
+        return fi
+
+
 async def add_domains(
     session: AsyncSession, lei: str, domains: List[FinancialInsitutionDomainCreate]
-) -> List[FinancialInstitutionDomainDao]:
+) -> Set[FinancialInstitutionDomainDao]:
     async with session.begin():
         daos = set(
             map(

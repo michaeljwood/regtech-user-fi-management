@@ -23,6 +23,12 @@ class SblTypeMappingDao(Base):
     details: Mapped[str] = mapped_column(nullable=True)
     modified_by: Mapped[str] = mapped_column()
 
+    def __eq__(self, other: "SblTypeMappingDao") -> bool:
+        return self.lei == other.lei and self.type_id == other.type_id and self.details == other.details
+
+    def __hash__(self) -> int:
+        return hash((self.lei, self.type_id, self.details))
+
     def as_db_dict(self):
         data = {}
         for attr, column in inspect(self.__class__).c.items():

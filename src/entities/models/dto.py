@@ -1,5 +1,13 @@
-from typing import List, Set
+from typing import Generic, List, Set, Sequence
 from pydantic import BaseModel, model_validator
+from typing import TypeVar
+
+T = TypeVar("T")
+
+
+class VersionedData(BaseModel, Generic[T]):
+    version: int
+    data: T
 
 
 class FinancialInsitutionDomainBase(BaseModel):
@@ -43,6 +51,10 @@ class SblTypeAssociationDto(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SblTypeAssociationPatchDto(BaseModel):
+    sbl_institution_types: Sequence[SblTypeAssociationDto | str]
 
 
 class FinancialInstitutionDto(FinancialInstitutionBase):

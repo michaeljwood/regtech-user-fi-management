@@ -1,4 +1,4 @@
-from fastapi import Depends, Request, HTTPException
+from fastapi import Depends, Request, HTTPException, Response
 from http import HTTPStatus
 from regtech_api_commons.oauth2.oauth2_admin import OAuth2Admin
 from config import kc_settings
@@ -16,6 +16,9 @@ from entities.models import (
     InstitutionTypeDto,
     AddressStateDto,
     FederalRegulatorDto,
+    SblTypeAssociationDetailsDto,
+    SblTypeAssociationPatchDto,
+    VersionedData,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.authentication import requires
@@ -103,6 +106,36 @@ async def get_institution(
     if not res:
         raise HTTPException(HTTPStatus.NOT_FOUND, f"{lei} not found.")
     return res
+
+
+@router.get("/{lei}/types/{type}", response_model=VersionedData[List[SblTypeAssociationDetailsDto]] | None)
+@requires("authenticated")
+async def get_types(request: Request, response: Response, lei: str, type: InstitutionType):
+    match type:
+        case "sbl":
+            if fi := await repo.get_institution(request.state.db_session, lei):
+                return VersionedData(version=fi.version, data=fi.sbl_institution_types)
+            else:
+                response.status_code = HTTPStatus.NO_CONTENT
+        case "hmda":
+            raise HTTPException(status_code=HTTPStatus.NOT_IMPLEMENTED, detail="HMDA type not yet supported")
+
+
+@router.put("/{lei}/types/{type}", response_model=VersionedData[List[SblTypeAssociationDetailsDto]] | None)
+@requires("authenticated")
+async def update_types(
+    request: Request, response: Response, lei: str, type: InstitutionType, types_patch: SblTypeAssociationPatchDto
+):
+    match type:
+        case "sbl":
+            if fi := await repo.update_sbl_types(
+                request.state.db_session, request.user, lei, types_patch.sbl_institution_types
+            ):
+                return VersionedData(version=fi.version, data=fi.sbl_institution_types) if fi else None
+            else:
+                response.status_code = HTTPStatus.NO_CONTENT
+        case "hmda":
+            raise HTTPException(status_code=HTTPStatus.NOT_IMPLEMENTED, detail="HMDA type not yet supported")
 
 
 @router.post("/{lei}/domains/", response_model=List[FinancialInsitutionDomainDto], dependencies=[Depends(check_domain)])

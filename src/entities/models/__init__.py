@@ -20,6 +20,8 @@ __all__ = [
     "SblTypeMappingDao",
     "SblTypeAssociationDto",
     "SblTypeAssociationDetailsDto",
+    "SblTypeAssociationPatchDto",
+    "VersionedData",
 ]
 
 from .dao import (
@@ -46,4 +48,6 @@ from .dto import (
     AddressStateDto,
     SblTypeAssociationDto,
     SblTypeAssociationDetailsDto,
+    SblTypeAssociationPatchDto,
+    VersionedData,
 )
