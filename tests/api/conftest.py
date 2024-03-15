@@ -61,7 +61,7 @@ def get_institutions_mock(mocker: MockerFixture, authed_user_mock: Mock) -> Mock
     mock.return_value = [
         FinancialInstitutionDao(
             name="Test Bank 123",
-            lei="TESTBANK123",
+            lei="TESTBANK123000000000",
             is_active=True,
             domains=[FinancialInstitutionDomainDao(domain="test.bank", lei="TESTBANK123")],
             tax_id="12-3456789",

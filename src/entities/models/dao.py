@@ -40,7 +40,7 @@ class FinancialInstitutionDao(AuditMixin, Base):
     __tablename__ = "financial_institutions"
     version: Mapped[int] = mapped_column(nullable=False, default=0)
     __mapper_args__ = {"version_id_col": version, "version_id_generator": False}
-    lei: Mapped[str] = mapped_column(unique=True, index=True, primary_key=True)
+    lei: Mapped[str] = mapped_column(String(20), unique=True, index=True, primary_key=True)
     name: Mapped[str] = mapped_column(index=True)
     is_active: Mapped[bool] = mapped_column(index=True)
     domains: Mapped[List["FinancialInstitutionDomainDao"]] = relationship(
