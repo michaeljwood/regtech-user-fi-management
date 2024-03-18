@@ -1,6 +1,6 @@
 import os
 from urllib import parse
-from typing import Any
+from typing import Any, Set
 
 from pydantic import field_validator, ValidationInfo
 from pydantic.networks import PostgresDsn
@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     inst_db_host: str
     inst_db_scheme: str = "postgresql+asyncpg"
     inst_conn: PostgresDsn | None = None
+    admin_scopes: Set[str] = set(["query-groups", "manage-users"])
 
     def __init__(self, **data):
         super().__init__(**data)

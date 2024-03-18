@@ -32,6 +32,26 @@ class TestInstitutionsApi:
         assert res.status_code == 200
         assert res.json()[0].get("name") == "Test Bank 123"
 
+    def test_get_institutions_authed_not_admin(
+        self,
+        mocker: MockerFixture,
+        app_fixture: FastAPI,
+        auth_mock: Mock,
+    ):
+        claims = {
+            "name": "test",
+            "preferred_username": "test_user",
+            "email": "test@local.host",
+            "sub": "testuser123",
+        }
+        auth_mock.return_value = (
+            AuthCredentials(["manage-account", "authenticated"]),
+            AuthenticatedUser.from_claim(claims),
+        )
+        client = TestClient(app_fixture)
+        res = client.get("/v1/institutions/")
+        assert res.status_code == 403
+
     def test_create_institution_unauthed(self, app_fixture: FastAPI, unauthed_user_mock: Mock):
         client = TestClient(app_fixture)
         res = client.post("/v1/institutions/", json={"name": "testName", "lei": "testLei"})
