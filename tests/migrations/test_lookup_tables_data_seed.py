@@ -70,7 +70,6 @@ def test_hmda_institution_type_data_seed(alembic_runner: MigrationContext, alemb
     alembic_runner.migrate_up_one()
     with alembic_engine.connect() as conn:
         hmda_institution_type_rows = conn.execute(
-            # text("SELECT id, name from %s" % hmda_institution_type_tablename)
             text("SELECT id, name from %s where id = :id" % hmda_institution_type_tablename),
             (dict(id="1")),
         ).fetchall()
