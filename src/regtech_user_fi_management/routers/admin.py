@@ -2,14 +2,14 @@ from http import HTTPStatus
 from typing import Set
 from fastapi import Depends, Request
 from starlette.authentication import requires
-from dependencies import check_domain
+from regtech_user_fi_management.dependencies import check_domain
 
-from regtech_api_commons.api import Router
-from entities.models import UserProfile
+from regtech_api_commons.api.router_wrapper import Router
+from regtech_user_fi_management.entities.models.dto import UserProfile
 
-from regtech_api_commons.models import RegTechUser
-from regtech_api_commons.oauth2 import OAuth2Admin
-from config import kc_settings
+from regtech_api_commons.models.auth import RegTechUser
+from regtech_api_commons.oauth2.oauth2_admin import OAuth2Admin
+from regtech_user_fi_management.config import kc_settings
 
 router = Router()
 

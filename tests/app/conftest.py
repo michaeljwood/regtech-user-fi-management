@@ -4,7 +4,7 @@ import pytest
 
 from pytest_mock import MockerFixture
 from starlette.authentication import AuthCredentials
-from regtech_api_commons.models import AuthenticatedUser, RegTechUser
+from regtech_api_commons.models.auth import AuthenticatedUser, RegTechUser
 
 
 @pytest.fixture(autouse=True)
@@ -13,7 +13,7 @@ def setup(mocker: MockerFixture):
     MockedEngine = mocker.patch("sqlalchemy.ext.asyncio.AsyncEngine")
     mocked_engine.return_value = MockedEngine.return_value
     mocker.patch("fastapi.security.OAuth2AuthorizationCodeBearer")
-    mocker.patch("entities.engine.get_session")
+    mocker.patch("regtech_user_fi_management.entities.engine.engine.get_session")
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ from typing import List
 from fastapi import HTTPException, Request
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
-from dependencies import lei_association_check, fi_search_association_check
+from regtech_user_fi_management.dependencies import lei_association_check, fi_search_association_check
 from starlette.authentication import AuthCredentials
 
 import pytest
@@ -15,9 +15,9 @@ def mock_session(mocker: MockerFixture) -> AsyncSession:
 
 
 async def test_domain_denied(mocker: MockerFixture, mock_session: AsyncSession):
-    domain_allowed_mock = mocker.patch("entities.repos.institutions_repo.is_domain_allowed")
+    domain_allowed_mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.is_domain_allowed")
     domain_allowed_mock.return_value = False
-    from dependencies import email_domain_denied
+    from regtech_user_fi_management.dependencies import email_domain_denied
 
     denied_domain = "denied.domain"
 
@@ -26,9 +26,9 @@ async def test_domain_denied(mocker: MockerFixture, mock_session: AsyncSession):
 
 
 async def test_domain_allowed(mocker: MockerFixture, mock_session: AsyncSession):
-    domain_allowed_mock = mocker.patch("entities.repos.institutions_repo.is_domain_allowed")
+    domain_allowed_mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.is_domain_allowed")
     domain_allowed_mock.return_value = True
-    from dependencies import email_domain_denied
+    from regtech_user_fi_management.dependencies import email_domain_denied
 
     allowed_domain = "allowed.domain"
 

@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from starlette.authentication import AuthCredentials
 from regtech_api_commons.models.auth import AuthenticatedUser
-from entities.models import (
+from regtech_user_fi_management.entities.models.dao import (
     FinancialInstitutionDao,
     FinancialInstitutionDomainDao,
     FederalRegulatorDao,
@@ -14,8 +14,8 @@ from entities.models import (
     HMDAInstitutionTypeDao,
     SBLInstitutionTypeDao,
     SblTypeMappingDao,
-    SblTypeAssociationDto,
 )
+from regtech_user_fi_management.entities.models.dto import SblTypeAssociationDto
 
 
 class TestInstitutionsApi:
@@ -123,7 +123,9 @@ class TestInstitutionsApi:
         assert res.status_code == 422
 
     def test_create_institution_authed(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        upsert_institution_mock = mocker.patch("entities.repos.institutions_repo.upsert_institution")
+        upsert_institution_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.upsert_institution"
+        )
         upsert_institution_mock.return_value = FinancialInstitutionDao(
             name="testName",
             lei="testLEI0000000000000",
@@ -182,7 +184,9 @@ class TestInstitutionsApi:
     def test_create_institution_only_required_fields(
         self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock
     ):
-        upsert_institution_mock = mocker.patch("entities.repos.institutions_repo.upsert_institution")
+        upsert_institution_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.upsert_institution"
+        )
         upsert_institution_mock.return_value = FinancialInstitutionDao(
             name="testName",
             lei="testLEI0000000000000",
@@ -293,7 +297,9 @@ class TestInstitutionsApi:
         assert res.status_code == 403
 
     def test_get_institution_authed(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.get_institution"
+        )
         get_institution_mock.return_value = FinancialInstitutionDao(
             name="Test Bank 123",
             lei="TESTBANK123000000000",
@@ -326,7 +332,9 @@ class TestInstitutionsApi:
         assert res.json().get("name") == "Test Bank 123"
 
     def test_get_institution_not_exists(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.get_institution"
+        )
         get_institution_mock.return_value = None
         client = TestClient(app_fixture)
         lei_path = "testLeiPath"
@@ -342,7 +350,7 @@ class TestInstitutionsApi:
         assert res.status_code == 403
 
     def test_add_domains_authed(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        add_domains_mock = mocker.patch("entities.repos.institutions_repo.add_domains")
+        add_domains_mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.add_domains")
         add_domains_mock.return_value = [FinancialInstitutionDomainDao(domain="test.bank", lei="TESTBANK123")]
         client = TestClient(app_fixture)
 
@@ -370,7 +378,7 @@ class TestInstitutionsApi:
     def test_add_domains_authed_with_denied_email_domain(
         self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock
     ):
-        domain_denied_mock = mocker.patch("dependencies.email_domain_denied")
+        domain_denied_mock = mocker.patch("regtech_user_fi_management.dependencies.email_domain_denied")
         domain_denied_mock.return_value = True
         client = TestClient(app_fixture)
         lei_path = "testLeiPath"
@@ -379,7 +387,9 @@ class TestInstitutionsApi:
         assert "domain denied" in res.json()["detail"]
 
     def test_check_domain_allowed(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        domain_allowed_mock = mocker.patch("entities.repos.institutions_repo.is_domain_allowed")
+        domain_allowed_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.is_domain_allowed"
+        )
         domain_allowed_mock.return_value = True
         domain_to_check = "local.host"
         client = TestClient(app_fixture)
@@ -485,13 +495,13 @@ class TestInstitutionsApi:
         assert res.json() == []
 
     def test_get_institution_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        mock = mocker.patch("entities.repos.institutions_repo.get_sbl_types")
+        mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.get_sbl_types")
         mock.return_value = []
         client = TestClient(app_fixture)
         res = client.get("/v1/institutions/types/sbl")
         assert res.status_code == 200
 
-        mock = mocker.patch("entities.repos.institutions_repo.get_hmda_types")
+        mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.get_hmda_types")
         mock.return_value = []
         res = client.get("/v1/institutions/types/hmda")
         assert res.status_code == 200
@@ -500,14 +510,14 @@ class TestInstitutionsApi:
         assert res.status_code == 422
 
     def test_get_address_states(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        mock = mocker.patch("entities.repos.institutions_repo.get_address_states")
+        mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.get_address_states")
         mock.return_value = []
         client = TestClient(app_fixture)
         res = client.get("/v1/institutions/address-states")
         assert res.status_code == 200
 
     def test_get_federal_regulators(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        mock = mocker.patch("entities.repos.institutions_repo.get_federal_regulators")
+        mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.get_federal_regulators")
         mock.return_value = []
         client = TestClient(app_fixture)
         res = client.get("/v1/institutions/regulators")
@@ -515,7 +525,9 @@ class TestInstitutionsApi:
 
     def test_get_sbl_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
         inst_version = 2
-        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.get_institution"
+        )
         get_institution_mock.return_value = FinancialInstitutionDao(
             version=inst_version,
             name="Test Bank 123",
@@ -552,7 +564,9 @@ class TestInstitutionsApi:
         assert result["data"][0] == {"sbl_type": {"id": "SIT1", "name": "SIT1"}, "details": None}
 
     def test_get_sbl_types_no_institution(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.get_institution"
+        )
         get_institution_mock.return_value = None
         client = TestClient(app_fixture)
         test_lei = "TESTBANK123"
@@ -566,7 +580,7 @@ class TestInstitutionsApi:
         assert res.status_code == HTTPStatus.NOT_IMPLEMENTED
 
     def test_update_institution_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        mock = mocker.patch("entities.repos.institutions_repo.update_sbl_types")
+        mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.update_sbl_types")
         client = TestClient(app_fixture)
         test_lei = "TESTBANK123"
         res = client.put(
@@ -581,7 +595,9 @@ class TestInstitutionsApi:
     def test_update_non_existing_institution_types(
         self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock
     ):
-        get_institution_mock = mocker.patch("entities.repos.institutions_repo.get_institution")
+        get_institution_mock = mocker.patch(
+            "regtech_user_fi_management.entities.repos.institutions_repo.get_institution"
+        )
         get_institution_mock.return_value = None
         client = TestClient(app_fixture)
         test_lei = "TESTBANK123"
@@ -594,7 +610,7 @@ class TestInstitutionsApi:
     def test_update_unsupported_institution_types(
         self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock
     ):
-        mock = mocker.patch("entities.repos.institutions_repo.update_sbl_types")
+        mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.update_sbl_types")
         client = TestClient(app_fixture)
         test_lei = "TESTBANK123"
         res = client.put(
@@ -605,7 +621,7 @@ class TestInstitutionsApi:
         mock.assert_not_called()
 
     def test_update_wrong_institution_types(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
-        mock = mocker.patch("entities.repos.institutions_repo.update_sbl_types")
+        mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.update_sbl_types")
         client = TestClient(app_fixture)
         test_lei = "TESTBANK123"
         res = client.put(

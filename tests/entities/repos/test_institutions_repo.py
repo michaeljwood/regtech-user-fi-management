@@ -2,23 +2,23 @@ import pytest
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from entities.models import (
-    FinancialInstitutionDao,
+from regtech_user_fi_management.entities.models.dto import (
     FinancialInstitutionDto,
-    FinancialInstitutionDomainDao,
     FinancialInsitutionDomainCreate,
+    SblTypeAssociationDto,
 )
-from entities.models import (
+from regtech_user_fi_management.entities.models.dao import (
+    FinancialInstitutionDomainDao,
+    FinancialInstitutionDao,
     DeniedDomainDao,
     AddressStateDao,
     FederalRegulatorDao,
     HMDAInstitutionTypeDao,
     SBLInstitutionTypeDao,
     SblTypeMappingDao,
-    SblTypeAssociationDto,
 )
-from entities.repos import institutions_repo as repo
-from regtech_api_commons.models import AuthenticatedUser
+import regtech_user_fi_management.entities.repos.institutions_repo as repo
+from regtech_api_commons.models.auth import AuthenticatedUser
 
 
 class TestInstitutionsRepo:

@@ -7,10 +7,10 @@ from fastapi.types import DecoratedCallable
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from itertools import chain
-from config import settings
+from regtech_user_fi_management.config import settings
 
-from entities.engine import get_session
-from entities.repos import institutions_repo as repo
+from regtech_user_fi_management.entities.engine.engine import get_session
+import regtech_user_fi_management.entities.repos.institutions_repo as repo
 from starlette.authentication import AuthCredentials
 from regtech_api_commons.models.auth import AuthenticatedUser
 

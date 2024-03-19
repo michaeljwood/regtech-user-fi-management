@@ -2,8 +2,8 @@ from typing import List
 from sqlalchemy import Connection, Table, event, inspect
 from sqlalchemy.orm import Mapper
 
-from .models.dao import Base, FinancialInstitutionDao, SblTypeMappingDao
-from entities.engine.engine import engine
+from regtech_user_fi_management.entities.models.dao import Base, FinancialInstitutionDao, SblTypeMappingDao
+from regtech_user_fi_management.entities.engine.engine import engine
 
 
 def inspect_fi(fi: FinancialInstitutionDao):

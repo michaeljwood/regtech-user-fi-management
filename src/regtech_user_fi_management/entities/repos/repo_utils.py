@@ -1,7 +1,8 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Sequence, TypeVar, Type
-from entities.models import Base, SblTypeMappingDao, SblTypeAssociationDto
+from regtech_user_fi_management.entities.models.dao import Base, SblTypeMappingDao
+from regtech_user_fi_management.entities.models.dto import SblTypeAssociationDto
 
 T = TypeVar("T", bound=Base)
 

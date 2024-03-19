@@ -6,9 +6,13 @@ from sqlalchemy import Connection, Insert, Table
 from sqlalchemy.orm import Mapper, InstanceState, AttributeState
 from sqlalchemy.orm.attributes import History
 
-from entities.models.dao import FinancialInstitutionDao, SBLInstitutionTypeDao, SblTypeMappingDao
+from regtech_user_fi_management.entities.models.dao import (
+    FinancialInstitutionDao,
+    SBLInstitutionTypeDao,
+    SblTypeMappingDao,
+)
 
-from entities.listeners import _setup_fi_history
+from regtech_user_fi_management.entities.listeners import _setup_fi_history
 
 
 class TestListeners:
@@ -48,7 +52,7 @@ class TestListeners:
         self.connection.reset_mock()
 
     def test_fi_history_listener(self, mocker: MockerFixture):
-        inspect_mock = mocker.patch("entities.listeners.inspect")
+        inspect_mock = mocker.patch("regtech_user_fi_management.entities.listeners.inspect")
         attr_mock1: AttributeState = Mock(AttributeState)
         attr_mock1.key = "name"
         attr_mock2: AttributeState = Mock(AttributeState)
@@ -80,7 +84,7 @@ class TestListeners:
         return mapping_state_mock
 
     def test_fi_mapping_changed(self, mocker: MockerFixture):
-        inspect_mock = mocker.patch("entities.listeners.inspect")
+        inspect_mock = mocker.patch("regtech_user_fi_management.entities.listeners.inspect")
         fi_state_mock = self._get_fi_inspect_mock()
         mapping_state_mock = self._get_mapping_inspect_mock()
 

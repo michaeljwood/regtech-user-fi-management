@@ -9,23 +9,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 from alembic.config import Config
 from alembic import command
-from entities.listeners import setup_dao_listeners
-
-from routers import admin_router, institutions_router
 
 from regtech_api_commons.oauth2.oauth2_backend import BearerTokenAuthBackend
 from regtech_api_commons.oauth2.oauth2_admin import OAuth2Admin
 
-from config import kc_settings
+from regtech_user_fi_management.config import kc_settings
+from regtech_user_fi_management.entities.listeners import setup_dao_listeners
+from regtech_user_fi_management.routers import admin_router, institutions_router
+
 
 log = logging.getLogger()
 
 
 def run_migrations():
     file_dir = os.path.dirname(os.path.realpath(__file__))
-    alembic_cfg = Config(f"{file_dir}/../alembic.ini")
-    alembic_cfg.set_main_option("script_location", f"{file_dir}/../db_revisions")
-    alembic_cfg.set_main_option("prepend_sys_path", f"{file_dir}/../")
+    alembic_cfg = Config(f"{file_dir}/../../alembic.ini")
+    alembic_cfg.set_main_option("script_location", f"{file_dir}/../../db_revisions")
+    alembic_cfg.set_main_option("prepend_sys_path", f"{file_dir}/../../")
     command.upgrade(alembic_cfg, "head")
 
 

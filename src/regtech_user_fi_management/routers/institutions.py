@@ -1,13 +1,19 @@
 from fastapi import Depends, Request, HTTPException, Response
 from http import HTTPStatus
 from regtech_api_commons.oauth2.oauth2_admin import OAuth2Admin
-from config import kc_settings
-from regtech_api_commons.api import Router
-from dependencies import check_domain, parse_leis, get_email_domain, lei_association_check, fi_search_association_check
+from regtech_user_fi_management.config import kc_settings
+from regtech_api_commons.api.router_wrapper import Router
+from regtech_user_fi_management.dependencies import (
+    check_domain,
+    parse_leis,
+    get_email_domain,
+    lei_association_check,
+    fi_search_association_check,
+)
 from typing import Annotated, List, Tuple, Literal
-from entities.engine import get_session
-from entities.repos import institutions_repo as repo
-from entities.models import (
+from regtech_user_fi_management.entities.engine.engine import get_session
+import regtech_user_fi_management.entities.repos.institutions_repo as repo
+from regtech_user_fi_management.entities.models.dto import (
     FinancialInstitutionDto,
     FinancialInstitutionWithRelationsDto,
     FinancialInsitutionDomainDto,

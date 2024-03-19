@@ -4,8 +4,8 @@ import pytest
 from fastapi import FastAPI
 from pytest_mock import MockerFixture
 from starlette.authentication import AuthCredentials, UnauthenticatedUser
-from regtech_api_commons.models import AuthenticatedUser
-from entities.models import (
+from regtech_api_commons.models.auth import AuthenticatedUser
+from regtech_user_fi_management.entities.models.dao import (
     FinancialInstitutionDao,
     FinancialInstitutionDomainDao,
     FederalRegulatorDao,
@@ -22,9 +22,9 @@ def app_fixture(mocker: MockerFixture) -> FastAPI:
     MockedEngine = mocker.patch("sqlalchemy.ext.asyncio.AsyncEngine")
     mocked_engine.return_value = MockedEngine.return_value
     mocker.patch("fastapi.security.OAuth2AuthorizationCodeBearer")
-    domain_denied_mock = mocker.patch("dependencies.email_domain_denied")
+    domain_denied_mock = mocker.patch("regtech_user_fi_management.dependencies.email_domain_denied")
     domain_denied_mock.return_value = False
-    from main import app
+    from regtech_user_fi_management.main import app
 
     return app
 
@@ -57,7 +57,7 @@ def unauthed_user_mock(auth_mock: Mock) -> Mock:
 
 @pytest.fixture
 def get_institutions_mock(mocker: MockerFixture, authed_user_mock: Mock) -> Mock:
-    mock = mocker.patch("entities.repos.institutions_repo.get_institutions")
+    mock = mocker.patch("regtech_user_fi_management.entities.repos.institutions_repo.get_institutions")
     mock.return_value = [
         FinancialInstitutionDao(
             name="Test Bank 123",

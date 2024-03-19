@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
-from entities.models import Base
+from regtech_user_fi_management.entities.models.dao import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -21,7 +21,7 @@ ENV = os.getenv("ENV", "LOCAL")
 
 if ENV == "LOCAL":
     file_dir = os.path.dirname(os.path.realpath(__file__))
-    load_dotenv(f"{file_dir}/../src/.env.local")
+    load_dotenv(f"{file_dir}/../src/regtech_user_fi_management/.env.local")
 else:
     load_dotenv()
 

@@ -1,4 +1,4 @@
-from config import Settings
+from regtech_user_fi_management.config import Settings
 
 
 def test_postgres_dsn_building():
