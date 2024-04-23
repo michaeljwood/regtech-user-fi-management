@@ -2,7 +2,7 @@ import functools
 
 from http import HTTPStatus
 from typing import Annotated
-from fastapi import Depends, Query, HTTPException, Request, Response
+from fastapi import Depends, Query, Request, Response
 from fastapi.types import DecoratedCallable
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
@@ -13,13 +13,18 @@ from regtech_user_fi_management.entities.engine.engine import get_session
 import regtech_user_fi_management.entities.repos.institutions_repo as repo
 from starlette.authentication import AuthCredentials
 from regtech_api_commons.models.auth import AuthenticatedUser
+from regtech_api_commons.api.exceptions import RegTechHttpException
 
 
 async def check_domain(request: Request, session: Annotated[AsyncSession, Depends(get_session)]) -> None:
     if not request.user.is_authenticated:
-        raise HTTPException(status_code=HTTPStatus.FORBIDDEN)
+        raise RegTechHttpException(
+            status_code=HTTPStatus.FORBIDDEN, name="Request Forbidden", detail="unauthenticated user"
+        )
     if await email_domain_denied(session, get_email_domain(request.user.email)):
-        raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail="email domain denied")
+        raise RegTechHttpException(
+            status_code=HTTPStatus.FORBIDDEN, name="Request Forbidden", detail="email domain denied"
+        )
 
 
 async def email_domain_denied(session: AsyncSession, email: str) -> bool:
@@ -58,7 +63,9 @@ def lei_association_check(func: DecoratedCallable) -> DecoratedCallable:
         user: AuthenticatedUser = request.user
         auth: AuthCredentials = request.auth
         if not is_admin(auth) and lei not in user.institutions:
-            raise HTTPException(HTTPStatus.FORBIDDEN, detail=f"LEI {lei} is not associated with the user.")
+            raise RegTechHttpException(
+                HTTPStatus.FORBIDDEN, name="Request Forbidden", detail=f"LEI {lei} is not associated with the user."
+            )
         return await func(request, *args, **kwargs)
 
     return wrapper  # type: ignore[return-value]
@@ -67,15 +74,17 @@ def lei_association_check(func: DecoratedCallable) -> DecoratedCallable:
 def fi_search_association_check(func: DecoratedCallable) -> DecoratedCallable:
     def verify_leis(user: AuthenticatedUser, leis: List[str]) -> None:
         if not set(filter(len, leis)).issubset(set(filter(len, user.institutions))):
-            raise HTTPException(
+            raise RegTechHttpException(
                 HTTPStatus.FORBIDDEN,
+                name="Request Forbidden",
                 detail=f"Institutions query with LEIs ({leis}) not associated with user is forbidden.",
             )
 
     def verify_domain(user: AuthenticatedUser, domain: str) -> None:
         if domain != get_email_domain(user.email):
-            raise HTTPException(
+            raise RegTechHttpException(
                 HTTPStatus.FORBIDDEN,
+                name="Request Forbidden",
                 detail=f"Institutions query with domain ({domain}) not associated with user is forbidden.",
             )
 
@@ -91,7 +100,11 @@ def fi_search_association_check(func: DecoratedCallable) -> DecoratedCallable:
             elif domain:
                 verify_domain(user, domain)
             elif not leis and not domain:
-                raise HTTPException(HTTPStatus.FORBIDDEN, detail="Retrieving institutions without filter is forbidden.")
+                raise RegTechHttpException(
+                    HTTPStatus.FORBIDDEN,
+                    name="Request Forbidden",
+                    detail="Retrieving institutions without filter is forbidden.",
+                )
         return await func(request=request, *args, **kwargs)
 
     return wrapper  # type: ignore[return-value]

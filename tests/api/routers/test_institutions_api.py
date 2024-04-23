@@ -87,7 +87,8 @@ class TestInstitutionsApi:
             },
         )
         assert (
-            res.json()["detail"][0]["msg"] == f"Value error, Invalid tax_id 123456789. {regex_configs.tin.error_text}"
+            res.json()["error_detail"][0]["msg"]
+            == f"Value error, Invalid tax_id 123456789. {regex_configs.tin.error_text}"
         )
         assert res.status_code == 422
 
@@ -119,7 +120,9 @@ class TestInstitutionsApi:
                 "top_holder_rssd_id": 123456,
             },
         )
-        assert res.json()["detail"][0]["msg"] == f"Value error, Invalid lei test_Lei. {regex_configs.lei.error_text}"
+        assert (
+            res.json()["error_detail"][0]["msg"] == f"Value error, Invalid lei test_Lei. {regex_configs.lei.error_text}"
+        )
         assert res.status_code == 422
 
     def test_create_institution_authed(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
@@ -254,7 +257,7 @@ class TestInstitutionsApi:
             },
         )
         assert res.status_code == 422
-        assert "requires additional details." in res.json()["detail"][0]["msg"]
+        assert "requires additional details." in res.json()["error_detail"][0]["msg"]
 
     def test_create_institution_authed_no_permission(self, app_fixture: FastAPI, auth_mock: Mock):
         claims = {
@@ -392,7 +395,7 @@ class TestInstitutionsApi:
         lei_path = "testLeiPath"
         res = client.post(f"/v1/institutions/{lei_path}/domains/", json=[{"domain": "testDomain"}])
         assert res.status_code == 403
-        assert "domain denied" in res.json()["detail"]
+        assert "domain denied" in res.json()["error_detail"]
 
     def test_check_domain_allowed(self, mocker: MockerFixture, app_fixture: FastAPI, authed_user_mock: Mock):
         domain_allowed_mock = mocker.patch(

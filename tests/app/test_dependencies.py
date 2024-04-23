@@ -4,6 +4,7 @@ from fastapi import HTTPException, Request
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 from regtech_user_fi_management.dependencies import lei_association_check, fi_search_association_check
+from regtech_api_commons.api.exceptions import RegTechHttpException
 from starlette.authentication import AuthCredentials
 
 import pytest
@@ -63,6 +64,7 @@ async def test_lei_association_check_not_matching(mock_request: Request):
         await method_to_wrap(mock_request, lei="NOTMYBANK")
     assert e.value.status_code == HTTPStatus.FORBIDDEN
     assert "not associated" in e.value.detail
+    assert isinstance(e.value, RegTechHttpException)
 
 
 async def test_fi_search_association_check_matching_lei(mock_request: Request):
@@ -82,6 +84,7 @@ async def test_fi_search_association_check_invalid_lei(mock_request: Request):
         await method_to_wrap(mock_request, leis=["NOTMYBANK"])
     assert e.value.status_code == HTTPStatus.FORBIDDEN
     assert "not associated" in e.value.detail
+    assert isinstance(e.value, RegTechHttpException)
 
 
 async def test_fi_search_association_check_matching_domain(mock_request: Request):
@@ -112,6 +115,7 @@ async def test_fi_search_association_check_no_filter(mock_request: Request):
         await method_to_wrap(mock_request)
     assert e.value.status_code == HTTPStatus.FORBIDDEN
     assert "without filter" in e.value.detail
+    assert isinstance(e.value, RegTechHttpException)
 
 
 async def test_fi_search_association_check_lei_admin(mock_request: Request):
