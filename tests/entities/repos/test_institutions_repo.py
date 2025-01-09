@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from regtech_user_fi_management.entities.models.dto import (
     FinancialInstitutionDto,
-    FinancialInsitutionDomainCreate,
+    FinancialInstitutionDomainCreate,
     SblTypeAssociationDto,
 )
 from regtech_user_fi_management.entities.models.dao import (
@@ -331,7 +331,7 @@ class TestInstitutionsRepo:
         repo.add_domains(
             transaction_session,
             "TESTBANK123000000000",
-            [FinancialInsitutionDomainCreate(domain="bank.test")],
+            [FinancialInstitutionDomainCreate(domain="bank.test")],
         )
         transaction_session.expunge_all()
         fi = repo.get_institution(query_session, "TESTBANK123000000000")
