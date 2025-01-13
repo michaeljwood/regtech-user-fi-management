@@ -12,8 +12,8 @@ import regtech_user_fi_management.entities.repos.institutions_repo as repo
 from regtech_user_fi_management.entities.models.dto import (
     FinancialInstitutionDto,
     FinancialInstitutionWithRelationsDto,
-    FinancialInsitutionDomainDto,
-    FinancialInsitutionDomainCreate,
+    FinancialInstitutionDomainDto,
+    FinancialInstitutionDomainCreate,
     FinancialInstitutionAssociationDto,
     InstitutionTypeDto,
     AddressStateDto,
@@ -163,12 +163,12 @@ def update_types(
             )
 
 
-@router.post("/{lei}/domains/", response_model=List[FinancialInsitutionDomainDto], dependencies=[Depends(check_domain)])
+@router.post("/{lei}/domains/", response_model=List[FinancialInstitutionDomainDto], dependencies=[Depends(check_domain)])
 @requires(["query-groups", "manage-users"])
 def add_domains(
     request: Request,
     lei: str,
-    domains: List[FinancialInsitutionDomainCreate],
+    domains: List[FinancialInstitutionDomainCreate],
 ):
     return repo.add_domains(request.state.db_session, lei, domains)
 

@@ -18,7 +18,7 @@ from regtech_user_fi_management.entities.models.dao import (
 
 from regtech_user_fi_management.entities.models.dto import (
     FinancialInstitutionDto,
-    FinancialInsitutionDomainCreate,
+    FinancialInstitutionDomainCreate,
     SblTypeAssociationDto,
 )
 
@@ -92,7 +92,7 @@ def update_sbl_types(
 
 
 def add_domains(
-    session: Session, lei: str, domains: List[FinancialInsitutionDomainCreate]
+    session: Session, lei: str, domains: List[FinancialInstitutionDomainCreate]
 ) -> Set[FinancialInstitutionDomainDao]:
     daos = set(
         map(

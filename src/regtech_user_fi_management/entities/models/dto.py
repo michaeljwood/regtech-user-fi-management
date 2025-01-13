@@ -12,15 +12,15 @@ class VersionedData(BaseModel, Generic[T]):
     data: T
 
 
-class FinancialInsitutionDomainBase(BaseModel):
+class FinancialInstitutionDomainBase(BaseModel):
     domain: str
 
 
-class FinancialInsitutionDomainCreate(FinancialInsitutionDomainBase):
+class FinancialInstitutionDomainCreate(FinancialInstitutionDomainBase):
     pass
 
 
-class FinancialInsitutionDomainDto(FinancialInsitutionDomainBase):
+class FinancialInstitutionDomainDto(FinancialInstitutionDomainBase):
     lei: str
 
     class Config:
@@ -165,7 +165,7 @@ class FinancialInstitutionWithRelationsDto(FinancialInstitutionDto):
     sbl_institution_types: List[SblTypeAssociationDetailsDto] = []
     hq_address_state: AddressStateDto | None = None
     lei_status: LeiStatusDto | None = None
-    domains: List[FinancialInsitutionDomainDto] = []
+    domains: List[FinancialInstitutionDomainDto] = []
 
 
 class FinancialInstitutionAssociationDto(FinancialInstitutionWithRelationsDto):
